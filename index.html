@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LunaCare | 4. 질환 백과 및 건강 칼럼</title>
+  <!-- Pretendard 웹폰트 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <!-- 분리된 CSS 파일 연결 -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 상단 고정 네비게이션 (5단계 메뉴 구조) -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-dot"></span>
+        LunaCare
+      </a>
+      <nav class="main-nav" aria-label="주요 메뉴">
+        <a href="#home" class="nav-link">1. 홈</a>
+        <a href="#ai-check" class="nav-link">2. AI 증상 체크</a>
+        <a href="#emergency" class="nav-link">3. 자가진단·응급신호</a>
+        <a href="#encyclopedia" class="nav-link active">4. 질환 백과·건강 칼럼</a>
+        <a href="#hospital-guide" class="nav-link">5. 병원 방문 가이드</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 히어로 & 검색 영역 -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-badge">의학 가이드라인 기반 여성 건강 백과</div>
+      <h1 class="hero-title">내 몸이 보내는 신호,<br />정확한 의학 정보로 이해하세요</h1>
+      <p class="hero-subtitle">
+        생리 주기 및 증상 데이터를 바탕으로 연관 산부인과 질환을 쉽게 확인하고,<br />
+        병원 진료 전 필요한 핵심 정보를 한눈에 살펴볼 수 있습니다.
+      </p>
+
+      <!-- AI 증상 체크 결과 연동 미리보기 박스 -->
+      <div class="ai-sync-box">
+        <div class="ai-sync-header">
+          <span class="ai-tag">AI 체크 결과 연동 시뮬레이션</span>
+          <span class="ai-desc">2번 페이지에서 선택한 증상에 따라 추천 질환이 상단에 자동 배치됩니다.</span>
+        </div>
+        <div class="ai-preset-buttons" id="aiPresetButtons">
+          <button type="button" class="preset-btn active" data-preset="all">전체 질환 보기</button>
+          <button type="button" class="preset-btn" data-preset="irregular">생리불순·다모증 선택됨</button>
+          <button type="button" class="preset-btn" data-preset="pain">극심한 생리통·골반통 선택됨</button>
+          <button type="button" class="preset-btn" data-preset="discharge">분비물 변화·가려움 선택됨</button>
+        </div>
+      </div>
+
+      <!-- 검색창 및 증상 해시태그 -->
+      <div class="search-wrapper">
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="질환명 또는 증상을 입력하세요 (예: 생리통, 부정출혈, 다낭성)"
+            aria-label="질환 및 증상 검색"
+          />
+          <button type="button" id="clearSearchBtn" class="clear-btn hidden" title="검색어 지우기">✕</button>
+        </div>
+        <div class="hashtag-list" id="hashtagList">
+          <button type="button" class="hashtag-btn" data-tag="생리통">#생리통</button>
+          <button type="button" class="hashtag-btn" data-tag="생리불순">#생리불순</button>
+          <button type="button" class="hashtag-btn" data-tag="부정출혈">#부정출혈</button>
+          <button type="button" class="hashtag-btn" data-tag="분비물">#분비물변화</button>
+          <button type="button" class="hashtag-btn" data-tag="무월경">#무월경</button>
+          <button type="button" class="hashtag-btn" data-tag="월경전증후군">#월경전증후군</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="container main-content">
+
+    <!-- AI 맞춤 추천 알림 배너 (프리셋 선택 시 노출) -->
+    <div id="aiRecommendationBanner" class="ai-banner hidden">
+      <div class="ai-banner-text">
+        <strong id="aiBannerTitle"></strong>
+        <p id="aiBannerDesc"></p>
+      </div>
+      <button type="button" id="resetPresetBtn" class="btn-outline-sm">필터 해제</button>
+    </div>
+
+    <!-- 섹션 1: 질환 백과사전 -->
+    <section id="encyclopedia" class="section-block">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">산부인과 주요 질환 백과</h2>
+          <p class="section-desc">카드를 클릭하면 3줄 쉬운 요약, 자가 증상 체크리스트, 병원 검사 과정을 확인할 수 있습니다.</p>
+        </div>
+        <span class="result-count" id="resultCount">총 8개 질환</span>
+      </div>
+
+      <!-- 카테고리 탭 -->
+      <div class="category-tabs" id="categoryTabs">
+        <button type="button" class="tab-btn active" data-category="전체">전체</button>
+        <button type="button" class="tab-btn" data-category="월경 장애">월경 장애</button>
+        <button type="button" class="tab-btn" data-category="내분비·배란 질환">내분비·배란 질환</button>
+        <button type="button" class="tab-btn" data-category="자궁·난소 구조적 질환">자궁·난소 구조적 질환</button>
+        <button type="button" class="tab-btn" data-category="감염성 질환">감염성 질환</button>
+      </div>
+
+      <!-- 질환 카드 그리드 -->
+      <div class="disease-grid" id="diseaseGrid"></div>
+
+      <!-- 검색 결과 없음 안내 -->
+      <div id="emptyState" class="empty-state hidden">
+        <p>일치하는 질환 정보가 없습니다. 다른 증상 키워드로 검색해 보세요.</p>
+        <button type="button" id="resetAllFiltersBtn" class="btn-primary">전체 질환 다시 보기</button>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 섹션 2: 건강 칼럼 -->
+    <section class="section-block">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">여성 건강 라이프 칼럼</h2>
+          <p class="section-desc">일상 속 생리 주기 관리와 올바른 여성 건강 습관을 위한 의학 콘텐츠입니다.</p>
+        </div>
+      </div>
+
+      <div class="column-grid" id="columnGrid"></div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 섹션 3: OX 팩트체크 -->
+    <section class="section-block">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">산부인과 오해와 진실 OX 팩트체크</h2>
+          <p class="section-desc">흔히 잘못 알고 있는 생리·진료 속설을 의학적 근거로 확인해 보세요.</p>
+        </div>
+      </div>
+
+      <div class="quiz-grid" id="quizGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- 하단 면책 조항 및 출처 푸터 -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="disclaimer-box">
+        <strong>의학적 면책 조항 (Medical Disclaimer)</strong>
+        <p>
+          본 페이지에서 제공하는 모든 질환 백과 및 건강 칼럼 정보는 사용자의 의학적 이해를 돕기 위한 참고 자료이며,
+          전문의의 의학적 진단이나 처방을 대체할 수 없습니다. 급성 복통, 과다 출혈, 고열 등의 증상이 나타날 경우
+          즉시 가까운 산부인과 전문의의 진료를 받으시기 바랍니다.
+        </p>
+      </div>
+      <div class="footer-meta">
+        <span>참고 문헌: 대한산부인과학회 · 질병관리청 국가건강정보포털 · 서울아산병원·삼성서울병원 질환백과</span>
+        <span>© 2026 LunaCare Women's Health Guide. Part 4: 질환 백과 및 건강 칼럼</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 질환 상세 모달 -->
+  <div id="diseaseModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <span class="modal-category" id="modalCategory"></span>
+          <h3 class="modal-title" id="modalTitle"></h3>
+          <p class="modal-eng" id="modalEng"></p>
+        </div>
+        <button type="button" class="modal-close" id="closeDiseaseModal" aria-label="닫기">✕</button>
+      </div>
+
+      <!-- 난이도 전환 탭 (쉬운 요약 vs 상세 의학 정보) -->
+      <div class="modal-mode-tabs">
+        <button type="button" class="mode-tab active" data-mode="easy">3줄 쉬운 요약</button>
+        <button type="button" class="mode-tab" data-mode="detail">상세 의학 정보 (원인·치료)</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 쉬운 요약 뷰 -->
+        <div id="easyView" class="mode-panel">
+          <div class="summary-box">
+            <h4>핵심 요약 3가지</h4>
+            <ul id="modalSummaryList" class="bullet-list"></ul>
+          </div>
+        </div>
+
+        <!-- 상세 의학 정보 뷰 -->
+        <div id="detailView" class="mode-panel hidden">
+          <div class="detail-group">
+            <h4>발생 원인 및 기전</h4>
+            <p id="modalCause"></p>
+          </div>
+          <div class="detail-group">
+            <h4>치료 및 관리 방법</h4>
+            <p id="modalTreatment"></p>
+          </div>
+        </div>
+
+        <!-- 공통 섹션: 자가 증상 체크리스트 -->
+        <div class="checklist-box">
+          <div class="checklist-header">
+            <h4>이런 증상이 있다면 의심해 보세요</h4>
+            <span id="checkScoreBadge" class="check-badge">0개 선택됨</span>
+          </div>
+          <div id="modalChecklist" class="checklist-items"></div>
+          <p id="checklistFeedback" class="checklist-feedback"></p>
+        </div>
+
+        <!-- 공통 섹션: 병원에서는 어떤 검사를 할까? -->
+        <div class="exam-box">
+          <h4>병원에서는 어떤 검사를 할까요? (진료 미리보기)</h4>
+          <p id="modalExam"></p>
+        </div>
+
+        <!-- 하단 출처 및 타 파트 연계 버튼 -->
+        <p class="modal-source" id="modalSource"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="alert('2번 [AI 증상 체크 화면]으로 이동합니다.')">
+            내 증상 다시 체크하기 (2번)
+          </button>
+          <button type="button" class="btn-primary" onclick="alert('5번 [병원 방문 가이드 및 진료 준비 안내]로 이동합니다.')">
+            검사 준비·병원 가이드 보기 (5번)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 건강 칼럼 읽기 모달 -->
+  <div id="columnModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <span class="modal-category" id="colModalTag"></span>
+          <h3 class="modal-title" id="colModalTitle"></h3>
+          <p class="modal-eng" id="colModalMeta"></p>
+        </div>
+        <button type="button" class="modal-close" id="closeColumnModal" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="colModalBody" class="column-article"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. 질환 백과 데이터 (의학 가이드라인 기반)
+    const diseases = [
+      {
+        id: "pcos",
+        name: "다낭성 난소 증후군",
+        eng: "Polycystic Ovary Syndrome (PCOS)",
+        category: "내분비·배란 질환",
+        tags: ["생리불순", "무월경", "다모증", "여드름"],
+        presets: ["irregular"],
+        shortDesc: "배란이 원활하지 않아 생리 주기가 길어지고, 남성호르몬 과다로 여드름·다모증이 동반될 수 있는 내분비 질환입니다.",
+        summary3: [
+          "가임기 여성의 5~10%에서 나타나는 매우 흔한 호르몬·배란 불균형 질환입니다.",
+          "생리 주기가 35일 이상으로 길어지거나 몇 달씩 생리를 건너뛰는 희발월경·무월경이 대표적입니다.",
+          "방치하면 자궁내막증식증이나 대사증후군 위험이 높아지므로 주기적인 호르몬 관리가 필요합니다."
+        ],
+        cause: "인슐린 저항성과 시상하부-뇌하수체-난소 축의 호르몬 불균형으로 인해 난포가 정상적으로 성숙·배란되지 못하고 작은 난포들이 여러 개 머무르면서 발생합니다.",
+        treatment: "체중의 5~10% 감량만으로도 배란이 회복되는 경우가 많습니다. 임신 계획 여부에 따라 경구피임약을 통한 주기 조절이나 배란 유도제 처방이 이루어집니다.",
+        checklist: [
+          "생리 주기가 35일 이상이거나 1년에 8회 미만으로 생리를 한다.",
+          "3개월 이상 생리가 없는 무월경 상태가 지속된 적이 있다.",
+          "턱수염, 팔·다리 체모가 굵어지거나 성인 여드름이 심해졌다.",
+          "최근 특별한 이유 없이 체중이 급격히 늘고 잘 빠지지 않는다."
+        ],
+        exam: "질 초음파(미혼 여성은 복부·항문 초음파)로 난소 모양을 확인하고, 혈액 검사를 통해 여성호르몬(LH, FSH), 남성호르몬, 갑상선 기능 및 혈당 수치를 함께 확인합니다.",
+        source: "출처: 대한산부인과학회 · 질병관리청 국가건강정보포털"
+      },
+      {
+        id: "endometriosis",
+        name: "자궁내막증",
+        eng: "Endometriosis",
+        category: "자궁·난소 구조적 질환",
+        tags: ["생리통", "골반통", "성교통", "난임"],
+        presets: ["pain"],
+        shortDesc: "자궁 안에 있어야 할 자궁내막 조직이 난소, 나팔관, 복막 등 자궁 밖에서 증식하며 극심한 통증과 염증을 유발합니다.",
+        summary3: [
+          "예전엔 없던 생리통이 새로 생기거나, 진통제를 먹어도 점점 통증이 심해진다면 의심해야 합니다.",
+          "생리 기간 외에도 만성 골반통, 배변통, 성교통이 동반될 수 있습니다.",
+          "난소에 혹(자궁내막종)을 만들어 난소 기능을 떨어뜨릴 수 있어 조기 발견이 중요합니다."
+        ],
+        cause: "생리혈이 나팔관을 통해 복강 내로 역류하면서 자궁내막 세포가 골반 장기에 착상·증식하는 현상과 면역학적 요인이 복합적으로 작용합니다.",
+        treatment: "병변 크기와 증상, 임신 계획에 따라 프로게스틴 제제·경구피임약 등 호르몬 억제 치료를 우선 시행하며, 크기가 큰 난소 낭종은 복강경 수술을 고려합니다.",
+        checklist: [
+          "생리통이 해가 갈수록 점점 심해지고 진통제 용량이 늘어난다.",
+          "생리가 끝나도 아랫배나 허리 통증이 계속 남아 있다.",
+          "생리 기간 중 배변할 때 찌르는 듯한 통증이 느껴진다.",
+          "임신을 시도한 지 1년이 넘었으나 자연 임신이 잘 되지 않는다."
+        ],
+        exam: "골반 초음파 검사로 난소 내 자궁내막종 유무를 확인하며, 혈액 검사(CA-125 수치) 및 필요 시 골반 MRI 검사를 통해 병변 범위를 정밀 평가합니다.",
+        source: "출처: 대한산부인과학회 · 서울아산병원 질환백과"
+      },
+      {
+        id: "myoma",
+        name: "자궁근종",
+        eng: "Uterine Myoma (Fibroids)",
+        category: "자궁·난소 구조적 질환",
+        tags: ["생리과다", "부정출혈", "빈혈", "생리통"],
+        presets: ["pain"],
+        shortDesc: "자궁의 근육층에 생기는 양성 종양으로, 가임기 여성의 30~40%에서 발견될 만큼 흔하며 위치에 따라 증상이 다릅니다.",
+        summary3: [
+          "암이 아닌 '양성 혹'이므로 크기가 작고 증상이 없다면 6개월~1년마다 정기 관찰만 합니다.",
+          "자궁 내막 가까이에 생기면 생리량이 과도하게 늘어나 어지럼증·빈혈을 유발할 수 있습니다.",
+          "혹이 커지면 방광이나 직장을 눌러 소변이 자주 마렵거나 아랫배가 묵직해집니다."
+        ],
+        cause: "정확한 원인은 밝혀지지 않았으나 자궁 평활근 세포의 비정상적 증식과 여성호르몬(에스트로겐·프로게스테론)의 영향으로 성장합니다.",
+        treatment: "무증상 근종은 정기 추적 관찰을 원칙으로 합니다. 출혈이나 통증이 심하면 약물치료(호르몬 조절), 하이푸(HIFU), 자궁근종 절제술 등을 선택합니다.",
+        checklist: [
+          "생리대를 1~2시간마다 갈아야 할 정도로 생리량이 지나치게 많다.",
+          "생리혈에 500원 동전 크기 이상의 덩어리가 자주 섞여 나온다.",
+          "최근 빈혈 수치가 낮아지고 쉽게 숨이 차거나 어지럽다.",
+          "아랫배에 단단한 덩어리가 만져지거나 소변을 자주 본다."
+        ],
+        exam: "산부인과 초음파 검사만으로 크기, 개수, 정확한 위치를 5~10분 내에 간단히 확인할 수 있습니다.",
+        source: "출처: 삼성서울병원 질환백과 · 질병관리청"
+      },
+      {
+        id: "adenomyosis",
+        name: "자궁선근증",
+        eng: "Adenomyosis",
+        category: "자궁·난소 구조적 질환",
+        tags: ["생리통", "생리과다", "부정출혈"],
+        presets: ["pain"],
+        shortDesc: "자궁내막 조직이 자궁 근육층 안으로 파고들어 자궁 전체가 두꺼워지고 커지면서 극심한 생리통과 과다월경을 일으킵니다.",
+        summary3: [
+          "30~40대 여성에서 흔하며, 자궁이 전체적으로 붓고 단단해지는 특징이 있습니다.",
+          "참기 힘든 극심한 생리통과 함께 생리 기간이 길어지고 생리량이 폭발적으로 늘어납니다.",
+          "자궁내막증이나 자궁근종과 함께 동반되는 경우가 많습니다."
+        ],
+        cause: "자궁내막 기저층이 자궁 근육층으로 침투하면서 생리 주기마다 근육층 내부에서도 출혈과 염증 반응이 반복되어 자궁벽이 비대해집니다.",
+        treatment: "진통소염제와 함께 자궁 내 호르몬 루프(미레나) 삽입, 경구피임약, 프로게스틴 복용으로 출혈과 통증을 효과적으로 줄일 수 있습니다.",
+        checklist: [
+          "생리 시작 며칠 전부터 끝난 후까지 통증이 길게 이어진다.",
+          "생리 기간이 8일 이상 지속되고 생리량이 감당하기 어렵다.",
+          "아랫배가 임신한 것처럼 묵직하고 팽만감이 느껴진다.",
+          "심한 빈혈로 철분제를 꾸준히 복용하고 있다."
+        ],
+        exam: "초음파 검사에서 자궁 근육층의 비대칭적 비후 소견을 확인하며, 자궁근종과 감별하기 위해 MRI 검사를 시행하기도 합니다.",
+        source: "출처: 서울아산병원 질환백과 · 대한산부인과학회"
+      },
+      {
+        id: "dysmenorrhea",
+        name: "원발성·속발성 월경통",
+        eng: "Primary & Secondary Dysmenorrhea",
+        category: "월경 장애",
+        tags: ["생리통", "구토", "요통"],
+        presets: ["pain"],
+        shortDesc: "생리 직전 또는 시작과 함께 아랫배와 허리에 나타나는 쥐어짜는 듯한 통증으로, 원인 질환 유무에 따라 나뉩니다.",
+        summary3: [
+          "원발성 월경통은 자궁에 별다른 병변 없이 자궁 수축 물질(프로스타글란딘) 과다 분비로 발생합니다.",
+          "속발성 월경통은 자궁내막증·자궁근종 등 기저 질환 때문에 생기는 통증입니다.",
+          "생리통이 시작되기 직전이나 초기에 진통제를 복용하면 프로스타글란딘 생성을 막아 훨씬 효과적입니다."
+        ],
+        cause: "원발성은 자궁내막에서 분비되는 프로스타글란딘이 자궁 근육을 강하게 수축시켜 혈류를 감소시키면서 발생하고, 속발성은 골반 내 기질적 질환이 원인입니다.",
+        treatment: "원발성은 비스테로이드성 소염진통제(NSAIDs)나 저용량 경구피임약으로 조절하며, 속발성은 초음파로 원인 질환을 찾아 치료합니다.",
+        checklist: [
+          "생리 첫날~둘째 날 아랫배가 쥐어짜듯 아프고 허리까지 뻗친다.",
+          "통증과 함께 메스꺼움, 구토, 설사, 식은땀이 동반된다.",
+          "진통제를 먹어도 일상생활이나 학업·업무가 불가능할 정도다.",
+          "20대 중반 이후에 갑자기 생리통이 새로 생겼다."
+        ],
+        exam: "문진과 골반 초음파 검사를 통해 자궁과 난소에 구조적 이상(속발성 원인)이 없는지 먼저 감별합니다.",
+        source: "출처: 질병관리청 국가건강정보포털"
+      },
+      {
+        id: "pms",
+        name: "월경전증후군 (PMS / PMDD)",
+        eng: "Premenstrual Syndrome",
+        category: "월경 장애",
+        tags: ["월경전증후군", "우울감", "부종", "유방통"],
+        presets: ["irregular"],
+        shortDesc: "생리 시작 4~10일 전부터 신체적·정서적 불편감이 나타났다가 생리가 시작되면 며칠 내로 사라지는 증후군입니다.",
+        summary3: [
+          "배란 이후 황체기의 급격한 호르몬 변화와 뇌 신경전달물질(세로토닌) 변동이 주요 원인입니다.",
+          "유방 압통, 복부 팽만, 부종 같은 신체 증상과 예민함, 우울감, 식욕 폭발이 함께 나타납니다.",
+          "생리가 시작되면 증상이 거짓말처럼 호전되는 주기적 패턴을 보입니다."
+        ],
+        cause: "배란 후 에스트로겐과 프로게스테론 농도가 급변하면서 체내 수분 저류와 세로토닌 저하를 유발하여 정서 및 신체 변화를 일으킵니다.",
+        treatment: "카페인·염분·당분 섭취 줄이기, 규칙적 유산소 운동 등 생활습관 교정과 함께 증상이 심하면 경구피임약이나 선택적 세로토닌 재흡수 억제제(SSRI)를 처방합니다.",
+        checklist: [
+          "생리 일주일 전부터 유독 짜증이 늘고 눈물이 나거나 우울해진다.",
+          "가슴이 붓고 스치기만 해도 아픈 유방 압통이 반복된다.",
+          "몸이 붓고 단 음식이나 탄수화물이 강하게 당긴다.",
+          "생리가 시작되고 1~2일이 지나면 위 증상들이 깨끗이 사라진다."
+        ],
+        exam: "별도의 혈액 검사보다는 최소 2주기 이상 증상 일기를 기록하여 배란 후 황체기에만 증상이 집중되는지 확인합니다.",
+        source: "출처: 대한산부인과학회 · 서울대학교병원 의학정보"
+      },
+      {
+        id: "vaginitis",
+        name: "질염 (칸디다·세균성·트리코모나스)",
+        eng: "Vaginitis",
+        category: "감염성 질환",
+        tags: ["분비물", "가려움", "냄새", "따가움"],
+        presets: ["discharge"],
+        shortDesc: "질 내 유익균 균형이 깨지거나 곰팡이·세균이 증식하면서 분비물 색과 냄새가 변하고 가려움·따가움이 생기는 질환입니다.",
+        summary3: [
+          "여성의 감기라고 불릴 만큼 컨디션 저하, 스트레스, 항생제 복용 후 흔하게 발생합니다.",
+          "흰 치즈 찌꺼기 같은 분비물과 심한 가려움은 '칸디다 질염', 생선 비린내와 묽은 분비물은 '세균성 질염' 특징입니다.",
+          "원인균에 따라 항진균제 또는 항생제 처방이 완전히 다르므로 정확한 균 검사가 중요합니다."
+        ],
+        cause: "면역력 저하, 과도한 질 세정제 사용(질 내 유익균 파괴), 꽉 끼는 통풍 안 되는 의류, 성 접촉 등으로 질 내 약산성 환경(pH 3.8~4.5)이 무너지며 발생합니다.",
+        treatment: "원인균에 맞는 질정(질 좌약), 경구약, 연고를 3~7일간 사용하면 대부분 빠르게 호전됩니다. 트리코모나스 질염은 파트너 동시 치료가 필요합니다.",
+        checklist: [
+          "외음부가 심하게 가렵거나 화끈거리고 따갑다.",
+          "냉 분비물이 치즈·두부 찌꺼기처럼 뭉쳐서 나온다.",
+          "분비물에서 생선 비린내 같은 불쾌한 악취가 난다.",
+          "분비물 색이 노란색, 연두색, 회색빛을 띠고 양이 급증했다."
+        ],
+        exam: "면봉으로 질 분비물을 가볍게 채취하여 현미경 검사 및 STD PCR 균 검사를 진행하면 원인균을 정확히 판별할 수 있습니다.",
+        source: "출처: 질병관리청 국가건강정보포털 · 삼성서울병원"
+      },
+      {
+        id: "poi",
+        name: "조기 난소 부전 (조기 폐경)",
+        eng: "Primary Ovarian Insufficiency (POI)",
+        category: "내분비·배란 질환",
+        tags: ["무월경", "생리불순", "안면홍조"],
+        presets: ["irregular"],
+        shortDesc: "만 40세 이전에 난소 기능이 일찍 저하되어 생리가 불규칙해지거나 4개월 이상 중단되는 상태입니다.",
+        summary3: [
+          "단순 스트레스성 생리 불순으로 여기고 방치하기 쉬우나, 3~4개월 이상 무월경이 지속되면 반드시 확인해야 합니다.",
+          "여성호르몬 감소로 안면홍조, 식은땀, 불면증, 질 건조감이 동반될 수 있습니다.",
+          "조기 진단 후 적절한 여성호르몬 보충 요법을 받으면 골다공증과 심혈관 건강을 지킬 수 있습니다."
+        ],
+        cause: "대부분 원인이 명확하지 않은 특발성이며, 일부는 염색체 이상, 자가면역 질환, 과거 난소 수술이나 항암·방사선 치료 영향으로 발생합니다.",
+        treatment: "정상 폐경 연령(만 50세 전후)까지 부족한 여성호르몬을 보충해 주는 호르몬 치료를 통해 골밀도 감소와 갱년기 증상을 예방합니다.",
+        checklist: [
+          "만 40세 미만인데 4개월 이상 생리가 전혀 없다.",
+          "특별한 더위가 없는데도 얼굴이 갑자기 화끈거리고 땀이 난다.",
+          "이유 없는 불면증, 피로감, 질 건조감이 최근 심해졌다.",
+          "가족 중 일찍 폐경을 경험한 어머니나 자매가 있다."
+        ],
+        exam: "4주 간격으로 2회 혈액 검사를 시행하여 난포자극호르몬(FSH) 수치 상승과 에스트로겐 감소를 확인하고, 난소 나이 검사(AMH)를 병행합니다.",
+        source: "출처: 대한산부인과학회 · 서울아산병원 질환백과"
+      }
+    ];
+
+    // 2. 건강 칼럼 데이터
+    const columns = [
+      {
+        id: "col1",
+        tag: "주기별 라이프케어",
+        title: "생리 주기 4단계에 맞춘 운동 & 컨디션 관리법",
+        meta: "읽는 시간 3분 · 호르몬 리듬 가이드",
+        excerpt: "월경기·난포기·배란기·황체기마다 달라지는 호르몬 변화에 맞춰 운동 강도와 식단을 조절하면 피로감을 크게 줄일 수 있습니다.",
+        content: [
+          "여성의 몸은 한 달 동안 에스트로겐과 프로게스테론의 파도를 타며 컨디션이 달라집니다. 무조건 매일 같은 강도로 운동하기보다 주기에 맞춰 조절하는 것이 효과적입니다.",
+          "1. 월경기 (생리 시작~종료): 호르몬 수치가 가장 낮고 철분이 빠져나가는 시기입니다. 격한 유산소나 복압이 올라가는 무거운 근력 운동 대신 가벼운 산책, 골반 이완 스트레칭, 요가가 골반 혈류 순환과 생리통 완화에 도움을 줍니다.",
+          "2. 난포기 (생리 직후~배란 전): 에스트로겐이 서서히 상승하면서 신진대사가 활발해지고 집중력과 체력이 가장 좋아지는 황금기입니다. 러닝, 수영, 근력 운동 등 평소 도전하고 싶었던 고강도 운동을 배치하기 좋습니다.",
+          "3. 배란기 & 황체기 (배란 후~다음 생리 전): 프로게스테론이 우세해지며 체온이 오르고 몸이 쉽게 붓습니다. 식욕이 증가하고 예민해지기 쉬우므로 염분과 카페인을 줄이고, 필라테스나 빠르게 걷기 같은 중강도 운동으로 기분을 환기해 주세요."
+        ]
+      },
+      {
+        id: "col2",
+        tag: "여성 위생·예방",
+        title: "질 유산균과 여성청결제, 올바른 선택과 사용 기준",
+        meta: "읽는 시간 3분 · 질 내 마이크로바이옴",
+        excerpt: "질 건강을 지키기 위해 매일 쓰는 세정제, 오히려 너무 자주 사용하면 유익균까지 씻겨 내려갈 수 있습니다.",
+        content: [
+          "건강한 질 내부는 '락토바실러스'라는 유익균이 젖산을 만들어 pH 3.8~4.5의 약산성 환경을 유지하며 외부 유해균 침입을 막아줍니다.",
+          "1. 여성청결제는 '외음부'에만 주 2~3회 사용하세요: 알칼리성 일반 비누나 바디워시는 질 내 산도를 무너뜨립니다. 약산성 여성청결제를 선택하되, 질 안쪽까지 깊숙이 씻어내는 질 세척(뒷물)은 오히려 정상 세균총을 파괴하므로 피해야 합니다.",
+          "2. 질 유산균 고르는 법: 일반 장 유산균과 달리 질까지 정착할 수 있도록 인체 적용 시험을 거친 '질 유래 특허 균주(예: L. rhamnosus GR-1, L. reuteri RC-14 등)'가 배합되어 있는지 확인하는 것이 좋습니다.",
+          "3. 가려움이나 악취가 이미 시작되었다면: 유산균이나 청결제는 '예방 보조제'일 뿐 치료제가 아닙니다. 증상이 나타났을 때는 산부인과에서 균 검사를 받고 원인균에 맞는 치료를 먼저 받으세요."
+        ]
+      },
+      {
+        id: "col3",
+        tag: "복약 가이드",
+        title: "경구피임약 복용 가이드: 생리 주기 조절부터 흔한 오해까지",
+        meta: "읽는 시간 4분 · 올바른 복용법",
+        excerpt: "피임 목적뿐 아니라 생리통·다낭성 난소 증후군 치료에도 쓰이는 경구피임약, 안전하게 복용하는 핵심 원칙을 정리했습니다.",
+        content: [
+          "경구피임약은 복합 호르몬 제제로, 배란을 억제하고 자궁내막을 얇게 유지해 피임 효과와 함께 생리량 감소 및 생리통 완화 효과를 줍니다.",
+          "1. 매일 같은 시간에 복용하기: 하루 중 알람을 맞춰 일정한 시간에 복용해야 혈중 호르몬 농도가 안정적으로 유지되어 부정출혈(돌발출혈)을 예방할 수 있습니다.",
+          "2. 복용을 잊었을 때 대처법: 12시간 이내에 생각났다면 즉시 1알을 복용하고 다음 날부터 원래 시간에 먹습니다. 24시간 이상 지났다면 약국 또는 처방받은 병원의 복약 안내서를 확인해 추가 피임법을 병행해야 합니다.",
+          "3. 주의해야 할 금기 대상: 만 35세 이상 흡연자, 혈전증 병력이 있는 경우, 전조 증상을 동반한 편두통, 중증 간 질환이 있는 경우에는 혈전 위험이 높아질 수 있으므로 반드시 산부인과 전문의 상담 후 복용 여부를 결정해야 합니다."
+        ]
+      }
+    ];
+
+    // 3. OX 팩트체크 데이터
+    const quizzes = [
+      {
+        q: "생리통 진통제를 매달 먹으면 내성이 생겨서 나중에 약이 안 듣는다?",
+        answer: "X",
+        explanation: "시중의 일반 생리통 진통제(이부프로펜, 덱시부프로펜, 아세트아미노펜 등)는 마약성 진통제가 아니므로 내성이나 중독을 일으키지 않습니다. 통증을 참다가 뒤늦게 먹는 것보다 생리 시작 직후 초기에 복용하는 것이 훨씬 효과적입니다."
+      },
+      {
+        q: "미혼 여성이나 성 경험이 없으면 산부인과에서 질 초음파 검사를 꼭 해야 한다?",
+        answer: "X",
+        explanation: "아닙니다. 성 경험이 없거나 질 초음파가 부담스러운 경우에는 소변을 참은 상태에서 시행하는 '복부 초음파'나 '항문 초음파'로 자궁과 난소 상태를 충분히 정확하게 확인할 수 있습니다. 진료 전 의료진에게 미리 말씀하시면 됩니다."
+      },
+      {
+        q: "생리 주기가 매달 28일로 딱 떨어지지 않고 2~3일씩 차이가 나면 생리불순이다?",
+        answer: "X",
+        explanation: "정상 생리 주기는 보통 21일~35일 사이이며, 매달 2~5일 정도 차이가 나는 것은 지극히 정상입니다. 다만 주기가 21일보다 짧아지거나 35일을 훌쩍 넘기는 일이 반복된다면 내분비 검사를 받아보는 것이 좋습니다."
+      }
+    ];
+
+    // 상태 관리 변수
+    let currentCategory = "전체";
+    let currentSearch = "";
+    let currentPreset = "all";
+    let activeDisease = null;
+
+    // DOM 요소 참조
+    const diseaseGrid = document.getElementById("diseaseGrid");
+    const resultCount = document.getElementById("resultCount");
+    const emptyState = document.getElementById("emptyState");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const aiRecommendationBanner = document.getElementById("aiRecommendationBanner");
+    const aiBannerTitle = document.getElementById("aiBannerTitle");
+    const aiBannerDesc = document.getElementById("aiBannerDesc");
+
+    // AI 프리셋 안내 문구
+    const presetMeta = {
+      irregular: {
+        title: "AI 증상 연동: '생리불순·다모증' 연관 질환 우선 표시 중",
+        desc: "입력하신 주기와 증상을 바탕으로 내분비·배란 관련 질환 3가지를 상단에 배치했습니다."
+      },
+      pain: {
+        title: "AI 증상 연동: '극심한 생리통·골반통' 연관 질환 우선 표시 중",
+        desc: "통증 양상을 고려하여 자궁·난소 구조적 질환 및 월경 장애 4가지를 먼저 보여드립니다."
+      },
+      discharge: {
+        title: "AI 증상 연동: '분비물 변화·가려움' 연관 질환 우선 표시 중",
+        desc: "감염성 질염의 주요 유형별 특징과 병원 균 검사 과정을 먼저 확인해 보세요."
+      }
+    };
+
+    // 질환 카드 렌더링 함수
+    function renderDiseases() {
+      let filtered = diseases.filter((item) => {
+        const matchCategory = currentCategory === "전체" || item.category === currentCategory;
+        const keyword = currentSearch.trim().toLowerCase();
+        const matchSearch =
+          !keyword ||
+          item.name.toLowerCase().includes(keyword) ||
+          item.eng.toLowerCase().includes(keyword) ||
+          item.shortDesc.toLowerCase().includes(keyword) ||
+          item.tags.some((t) => t.toLowerCase().includes(keyword));
+        return matchCategory && matchSearch;
+      });
+
+      // AI 프리셋 선택 시 연관 질환 상단 정렬
+      if (currentPreset !== "all") {
+        filtered.sort((a, b) => {
+          const aMatch = a.presets.includes(currentPreset) ? 1 : 0;
+          const bMatch = b.presets.includes(currentPreset) ? 1 : 0;
+          return bMatch - aMatch;
+        });
+      }
+
+      resultCount.textContent = `총 ${filtered.length}개 질환`;
+
+      if (filtered.length === 0) {
+        diseaseGrid.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      diseaseGrid.innerHTML = filtered
+        .map((item) => {
+          const isAiMatched = currentPreset !== "all" && item.presets.includes(currentPreset);
+          return `
+            <article class="disease-card ${isAiMatched ? "ai-highlighted" : ""}" onclick="openDiseaseModal('${item.id}')">
+              <div class="card-top">
+                <span class="card-category">${item.category}</span>
+                ${isAiMatched ? '<span class="ai-match-badge">AI 증상 연관</span>' : ""}
+              </div>
+              <h3 class="card-title">${item.name}</h3>
+              <p class="card-eng">${item.eng}</p>
+              <p class="card-desc">${item.shortDesc}</p>
+              <div class="card-tags">
+                ${item.tags.map((tag) => `<span class="mini-tag">#${tag}</span>`).join("")}
+              </div>
+              <div class="card-footer">
+                <span>상세 요약 · 자가 체크리스트 보기</span>
+                <span class="arrow">→</span>
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    // 건강 칼럼 렌더링
+    function renderColumns() {
+      const columnGrid = document.getElementById("columnGrid");
+      columnGrid.innerHTML = columns
+        .map(
+          (col) => `
+          <article class="column-card" onclick="openColumnModal('${col.id}')">
+            <span class="column-tag">${col.tag}</span>
+            <h3 class="column-title">${col.title}</h3>
+            <p class="column-excerpt">${col.excerpt}</p>
+            <div class="column-footer">
+              <span>${col.meta}</span>
+              <span class="read-more">칼럼 읽기 →</span>
+            </div>
+          </article>
+        `
+        )
+        .join("");
+    }
+
+    // OX 팩트체크 렌더링
+    function renderQuizzes() {
+      const quizGrid = document.getElementById("quizGrid");
+      quizGrid.innerHTML = quizzes
+        .map(
+          (quiz, idx) => `
+          <div class="quiz-card" id="quizCard-${idx}">
+            <div class="quiz-q-badge">Q${idx + 1}</div>
+            <p class="quiz-question">${quiz.q}</p>
+            <div class="quiz-buttons">
+              <button type="button" class="ox-btn" onclick="checkQuiz(${idx}, 'O', this)">O (맞다)</button>
+              <button type="button" class="ox-btn" onclick="checkQuiz(${idx}, 'X', this)">X (아니다)</button>
+            </div>
+            <div class="quiz-answer hidden" id="quizAnswer-${idx}">
+              <strong class="answer-label">정답: ${quiz.answer}</strong>
+              <p>${quiz.explanation}</p>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+    }
+
+    // OX 퀴즈 정답 확인
+    function checkQuiz(idx, choice, btnEl) {
+      const quiz = quizzes[idx];
+      const card = document.getElementById(`quizCard-${idx}`);
+      const answerBox = document.getElementById(`quizAnswer-${idx}`);
+      const buttons = card.querySelectorAll(".ox-btn");
+
+      buttons.forEach((b) => b.classList.remove("selected-correct", "selected-wrong"));
+
+      if (choice === quiz.answer) {
+        btnEl.classList.add("selected-correct");
+      } else {
+        btnEl.classList.add("selected-wrong");
+      }
+
+      answerBox.classList.remove("hidden");
+    }
+
+    // 질환 상세 모달 열기
+    function openDiseaseModal(id) {
+      const item = diseases.find((d) => d.id === id);
+      if (!item) return;
+      activeDisease = item;
+
+      document.getElementById("modalCategory").textContent = item.category;
+      document.getElementById("modalTitle").textContent = item.name;
+      document.getElementById("modalEng").textContent = item.eng;
+
+      // 3줄 요약 채우기
+      document.getElementById("modalSummaryList").innerHTML = item.summary3
+        .map((line) => `<li>${line}</li>`)
+        .join("");
+
+      // 상세 의학 정보 채우기
+      document.getElementById("modalCause").textContent = item.cause;
+      document.getElementById("modalTreatment").textContent = item.treatment;
+
+      // 자가 증상 체크리스트 생성
+      const checklistEl = document.getElementById("modalChecklist");
+      checklistEl.innerHTML = item.checklist
+        .map(
+          (text, i) => `
+          <label class="check-item">
+            <input type="checkbox" class="symptom-checkbox" onchange="updateChecklistScore()" />
+            <span>${text}</span>
+          </label>
+        `
+        )
+        .join("");
+
+      updateChecklistScore();
+
+      document.getElementById("modalExam").textContent = item.exam;
+      document.getElementById("modalSource").textContent = item.source;
+
+      // 기본 탭 초기화 ('3줄 쉬운 요약')
+      switchModalMode("easy");
+
+      document.getElementById("diseaseModal").classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    // 체크리스트 점수 계산
+    function updateChecklistScore() {
+      const checked = document.querySelectorAll(".symptom-checkbox:checked").length;
+      const badge = document.getElementById("checkScoreBadge");
+      const feedback = document.getElementById("checklistFeedback");
+
+      badge.textContent = `${checked}개 선택됨`;
+
+      if (checked === 0) {
+        feedback.textContent = "해당하는 증상을 체크해 보면 진료 필요도를 가늠할 수 있습니다.";
+        feedback.className = "checklist-feedback";
+      } else if (checked === 1) {
+        feedback.textContent = "1개 항목에 해당합니다. 생리 주기 변화를 기록하며 경과를 관찰해 보세요.";
+        feedback.className = "checklist-feedback info";
+      } else {
+        feedback.textContent = `${checked}개 이상의 연관 증상이 확인되었습니다. 산부인과 전문의 상담 및 초음파·혈액 검사를 권장합니다.`;
+        feedback.className = "checklist-feedback alert";
+      }
+    }
+
+    // 모달 내부 탭 전환 (쉬운 요약 vs 상세 정보)
+    function switchModalMode(mode) {
+      document.querySelectorAll(".mode-tab").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.mode === mode);
+      });
+      document.getElementById("easyView").classList.toggle("hidden", mode !== "easy");
+      document.getElementById("detailView").classList.toggle("hidden", mode !== "detail");
+    }
+
+    // 칼럼 모달 열기
+    function openColumnModal(id) {
+      const col = columns.find((c) => c.id === id);
+      if (!col) return;
+
+      document.getElementById("colModalTag").textContent = col.tag;
+      document.getElementById("colModalTitle").textContent = col.title;
+      document.getElementById("colModalMeta").textContent = col.meta;
+      document.getElementById("colModalBody").innerHTML = col.content
+        .map((p) => `<p>${p}</p>`)
+        .join("");
+
+      document.getElementById("columnModal").classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    // 모달 닫기 공통
+    function closeAllModals() {
+      document.getElementById("diseaseModal").classList.add("hidden");
+      document.getElementById("columnModal").classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    // 이벤트 리스너 연결
+    document.getElementById("closeDiseaseModal").addEventListener("click", closeAllModals);
+    document.getElementById("closeColumnModal").addEventListener("click", closeAllModals);
+
+    document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeAllModals();
+      });
+    });
+
+    document.querySelectorAll(".mode-tab").forEach((btn) => {
+      btn.addEventListener("click", () => switchModalMode(btn.dataset.mode));
+    });
+
+    // 카테고리 탭 클릭
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentCategory = btn.dataset.category;
+        renderDiseases();
+      });
+    });
+
+    // 실시간 검색 입력
+    searchInput.addEventListener("input", (e) => {
+      currentSearch = e.target.value;
+      clearSearchBtn.classList.toggle("hidden", !currentSearch);
+      renderDiseases();
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      currentSearch = "";
+      searchInput.value = "";
+      clearSearchBtn.classList.add("hidden");
+      renderDiseases();
+    });
+
+    // 해시태그 버튼 클릭
+    document.querySelectorAll(".hashtag-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tag = btn.dataset.tag;
+        searchInput.value = tag;
+        currentSearch = tag;
+        clearSearchBtn.classList.remove("hidden");
+        renderDiseases();
+      });
+    });
+
+    // AI 프리셋 버튼 클릭
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentPreset = btn.dataset.preset;
+
+        if (currentPreset === "all") {
+          aiRecommendationBanner.classList.add("hidden");
+        } else {
+          aiBannerTitle.textContent = presetMeta[currentPreset].title;
+          aiBannerDesc.textContent = presetMeta[currentPreset].desc;
+          aiRecommendationBanner.classList.remove("hidden");
+        }
+        renderDiseases();
+      });
+    });
+
+    document.getElementById("resetPresetBtn").addEventListener("click", () => {
+      document.querySelector('.preset-btn[data-preset="all"]').click();
+    });
+
+    document.getElementById("resetAllFiltersBtn").addEventListener("click", () => {
+      currentCategory = "전체";
+      currentSearch = "";
+      searchInput.value = "";
+      clearSearchBtn.classList.add("hidden");
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelector('.tab-btn[data-category="전체"]').classList.add("active");
+      document.querySelector('.preset-btn[data-preset="all"]').click();
+    });
+
+    // 초기 렌더링 실행
+    renderDiseases();
+    renderColumns();
+    renderQuizzes();
+  </script>
+</body>
+</html>
